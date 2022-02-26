@@ -75,7 +75,7 @@ Default value is `0`.
 
 The preferred programming language.
 
-Values: `'cpp'`, `'java'`, `'python'`, `'python3'`, `'csharp'`, `'javascript'`,
+Values: `'cpp'`, `'java'`, `'python'`, `'python3'`, `'csharp'`, `'javascript'`, `'typescript'`,
 `'ruby'`, `'swift'`, `'golang'`, `'scala'`, `'kotlin'`, ``'rust'``.
 
 Default value is `'cpp'`.

@@ -1,16 +1,16 @@
-# leetcode.vim
+# neuleetcode.vim
 
 [![asciicast][thumbnail]][asciicast]
 
 Solve LeetCode problems in Vim!
 
-This Vim plugin is inspired by [skygragon/leetcode-cli][leetcode-cli].
+This Vim plugin is a fork of [ianding1/leetcode.vim][leetcode.vim] which is inspired by [skygragon/leetcode-cli][leetcode-cli].
 
 **Attention:** Recently LeetCode used Google reCAPTCHA to enhance security,
 prohibiting automatic login through LeetCode API.
 
 The new login procedure needs you to **login in your browser first** so that
-**leetcode.vim** can read the LeetCode session cookie from the browser's cookie
+**neuleetcode.vim** can read the LeetCode session cookie from the browser's cookie
 storage.
 
 Supported browsers are: **Chrome**, **Firefox**. Safari is not supported
@@ -24,8 +24,8 @@ pip3 install keyring browser-cookie3 --user
 ```
 2. Set `g:leetcode_browser` to `'chrome'` or `'firefox'`.
 
-Thanks [@zhuopro](https://github.com/zhoupro)
-(see [#25](https://github.com/ianding1/leetcode.vim/issues/25))
+Thanks [@zhuopro][user-zhuopro]
+(see [#25][#25])
 for his brilliant idea!
 
 ## Installation
@@ -41,7 +41,7 @@ pip3 install keyring browser-cookie3 --user
 ```
 3. Install the plugin:
 ```vim
-Plug 'ianding1/leetcode.vim'
+Plug 'mbledkowski/neuleetcode.vim'
 ```
 
 ## Quick Start
@@ -53,7 +53,7 @@ Plug 'ianding1/leetcode.vim'
 
 ## Key mappings
 
-**leetcode.vim** doesn't bind any key mappings by default. Put the following
+**neuleetcode.vim** doesn't bind any key mappings by default. Put the following
 lines to your **.vimrc** to set up the key mappings.
 
 ```vim
@@ -112,16 +112,6 @@ Set the problemset to get from leetcode.
 
 Default value is `all`
 
-## Updates
-
-- 2019/12/20: Fix the login issue caused by reCAPTCHA.
-- 2019/08/01: Support custom test input
-- 2019/07/28: Support showing frequencies and sorting by columns
-- 2019/07/27:
-  + Support LeetCode China accounts
-  + Support refreshing
-- 2019/07/23: Support topics and companies
-
 ## FAQ
 
 ### I use Ubuntu and get errors when signing in. How can I fix it?
@@ -139,12 +129,6 @@ It's caused by the misconfiguration of python-keyring. One way to fix it is to c
 default-keyring=keyring.backends.Gnome.Keyring
 ```
 
-### Why can't I test the problem/submit the problem/list the problems?
-
-~~Once you sign in on your browser in LeetCode website, the LeetCode session in
-Vim get expired immediatelly. Then you need to sign in again in Vim before
-doing other things.~~ (No longer having this problem)
-
 ### Why can't I test and submit solutions?
 
 According to issue [#5][#5], **if the email address is not active, then you can
@@ -159,5 +143,8 @@ pip3 install --upgrade keyrings.alt
 
 [thumbnail]: https://asciinema.org/a/200004.png
 [asciicast]: https://asciinema.org/a/200004
+[leetcode.vim]: https://github.com/ianding1/leetcode.vim
 [leetcode-cli]: https://github.com/skygragon/leetcode-cli
 [#5]: https://github.com/ianding1/leetcode.vim/issues/5
+[#25]: https://github.com/ianding1/leetcode.vim/issues/25
+[user-zhuopro]: https://github.com/zhoupro

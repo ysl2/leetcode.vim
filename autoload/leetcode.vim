@@ -444,16 +444,18 @@ function! s:SlugToFileName(slug) abort
 endfunction
 
 function! s:ProblemSlugFromFileName() abort
-    let parts = split(expand('%:t:r'), '\.')  " Filename without the extension
+    " 1-two_sum -> 1.two-sum
+    let file_name = substitute(expand('%:t:r'), '-', '\.', 'g')
+    let parts = split(file_name, '\.')  " Filename without the extension
     if len(parts) == 1
-        " Old style, e.g. two-sum
+        " Old style, e.g. two_sum
         return s:FileNameToSlug(parts[0])
     elseif len(parts) == 2 && parts[0] =~ '\v^[0-9]+$'
-        " New style, e.g. 1.two-sum
+        " New style, e.g. 1.two_sum
         return s:FileNameToSlug(parts[1])
     elseif len(parts) == 2
         if parts[-1] =~# '^\d\+$'
-            " Old style with submission id, e.g. two-sum.1234 
+            " Old style with submission id, e.g. two_sum.1234 
             return s:FileNameToSlug(parts[0])
         else
             " There some problems like `面试题59 - II.dui_lie_de_zui_da_zhi_lcof.cpp` in leetcode-cn
@@ -461,7 +463,7 @@ function! s:ProblemSlugFromFileName() abort
         endif
     elseif len(parts) == 3
         if parts[-1] =~# '^\d\+$'
-            " New style with submission id, e.g. 1.two-sum.1234
+            " New style with submission id, e.g. 1.two_sum.1234
             return s:FileNameToSlug(parts[1])
         else
             " There some problems like `面试题 02.06.palindrome_linked_list_lcci.cpp` in leetcode-cn
@@ -527,7 +529,7 @@ function! s:HandleProblemListCR() abort
         let problem = s:GetProblem(problem_id)
         let problem_slug = problem['slug']
         let problem_ext = s:SolutionFileExt(g:leetcode_solution_filetype)
-        let problem_file_name = printf('%s.%s.%s', problem_id,
+        let problem_file_name = printf('%s-%s.%s', problem_id,
                     \  s:SlugToFileName(problem_slug),
                     \ problem_ext)
 
@@ -1216,7 +1218,7 @@ function! s:HandleSubmissionsCR() abort
         return
     endif
 
-    let file_name = printf('%s.%s.%s.%s', 
+    let file_name = printf('%s-%s.%s.%s',
                 \ submission['problem_id'],
                 \ s:SlugToFileName(submission['slug']),
                 \ submission_id, s:SolutionFileExt(submission['filetype']))

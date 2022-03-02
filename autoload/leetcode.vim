@@ -662,6 +662,10 @@ let s:file_type_to_ext = {
             \ 'scala': 'scala',
             \ 'kotlin': 'kt',
             \ 'rust': 'rs',
+            \ 'racket': 'pp',
+            \ 'php': 'php',
+            \ 'erlang': 'erl',
+            \ 'elixir': 'exs',
             \ }
 
 function! s:SolutionFileExt(filetype) abort
@@ -745,12 +749,16 @@ endfunction
 
 function! s:CommentStart(filetype, title) abort
     if index(['java', 'c', 'javascript', 'typescript', 'cpp', 'csharp', 'swift', 'scala',
-                \ 'kotlin', 'rust'], a:filetype) >= 0
+                \ 'kotlin', 'rust', 'php',], a:filetype) >= 0
         return '/* ' . a:title
-    elseif index(['python', 'python3', 'ruby'], a:filetype) >= 0
+    elseif index(['python', 'python3', 'ruby', "elixir"], a:filetype) >= 0
         return '# ' . a:title
     elseif index(['golang'], a:filetype) >= 0
         return '// ' . a:title
+    elseif index(['erlang'], a:filetype) >= 0
+        return '% ' . a:title
+    elseif index(['racket'], a:filetype) >= 0
+        return '#| ' . a:title
     else
         return a:title
     endif
@@ -758,12 +766,14 @@ endfunction
 
 function! s:CommentLine(filetype, line) abort
     if index(['java', 'c', 'javascript', 'typescript', 'cpp', 'csharp', 'swift', 'scala',
-                \ 'kotlin', 'rust'], a:filetype) >= 0
+                \ 'kotlin', 'rust', 'php'], a:filetype) >= 0
         return ' * ' . a:line
-    elseif index(['python', 'python3', 'ruby'], a:filetype) >= 0
+    elseif index(['python', 'python3', 'ruby', 'racket', 'elixir'], a:filetype) >= 0
         return '# '.a:line
     elseif index(['golang'], a:filetype) >= 0
         return '// '.a:line
+    elseif index(['erlang'], a:filetype) >= 0
+        return '% '.a:line
     else
         return a:line
     endif
@@ -771,12 +781,16 @@ endfunction
 
 function! s:CommentEnd(filetype) abort
     if index(['java', 'c', 'javascript', 'typescript', 'cpp', 'csharp', 'swift', 'scala',
-                \ 'kotlin', 'rust'], a:filetype) >= 0
+                \ 'kotlin', 'rust', 'php'], a:filetype) >= 0
         return ' * [End of Description] */'
-    elseif index(['python', 'python3', 'ruby'], a:filetype) >= 0
+    elseif index(['python', 'python3', 'ruby', 'elixir'], a:filetype) >= 0
         return '# [End of Description]:'
     elseif index(['golang'], a:filetype) >= 0
         return '// [End of Description]'
+    elseif index(['erlang'], a:filetype) >= 0
+        return '% [End of Description]'
+    elseif index(['racket'], a:filetype) >= 0
+        return '# [End of Description] |#'
     else
         return ''
     endif

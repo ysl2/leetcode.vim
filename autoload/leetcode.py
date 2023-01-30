@@ -220,7 +220,7 @@ def _get_category_problems(category):
                    'ac_rate': p['stat']['total_acs'] / p['stat']['total_submitted'],
                    'level': _level_to_name(p['difficulty']['level']),
                    'favor': p['is_favor'],
-                   'category': content['category_slug'],
+                   'category': content['category_slug'], # HACK: 🎫 Don't know if I should delete this line.
                    'frequency': p['frequency']}
         problems.append(problem)
     return problems

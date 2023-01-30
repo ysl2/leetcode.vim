@@ -455,7 +455,7 @@ function! s:ProblemSlugFromFileName() abort
         return s:FileNameToSlug(parts[1])
     elseif len(parts) == 2
         if parts[-1] =~# '^\d\+$'
-            " Old style with submission id, e.g. two_sum.1234 
+            " Old style with submission id, e.g. two_sum.1234
             return s:FileNameToSlug(parts[0])
         else
             " There some problems like `面试题59 - II.dui_lie_de_zui_da_zhi_lcof.cpp` in leetcode-cn
@@ -539,7 +539,9 @@ function! s:HandleProblemListCR() abort
         endif
 
         execute 'rightbelow vnew ' . problem_file_name
-        call leetcode#ResetSolution(1)
+        execute 'wincmd h'
+        execute 'wincmd c'
+        call leetcode#ResetSolution(0)
     endif
 endfunction
 
@@ -735,16 +737,17 @@ function! leetcode#ResetSolution(with_latest_submission) abort
     endfor
     call add(output, s:CommentEnd(filetype))
 
-    execute 'leftabove '. len(output). 'new ' . problem_desc_file_name
+    execute 'leftabove vsp ' . problem_desc_file_name
     call append('$', output)
     silent! normal! ggdd
     silent! normal! gggqG
+    silent! normal! gg
 
     setlocal nomodifiable
     setlocal buftype=nofile
     setlocal nospell
+    setlocal wrap
 
-    execute 'wincmd j'
 endfunction
 
 function! s:CommentStart(filetype, title) abort
@@ -821,16 +824,7 @@ function! s:GuessFileType() abort
     endif
 
     if ext == 'py'
-        let python_version = input('Which Python [2/3]: ', '3')
-        redraw
-        if python_version ==# '2'
-            return 'python'
-        elseif python_version ==# '3'
-            return 'python3'
-        else
-            echo 'unrecognized answer, default to Python3'
-            return 'python3'
-        endif
+        return 'python3'
     endif
 
     return ''
@@ -1097,7 +1091,7 @@ function! s:CheckRunCodeTask(timer) abort
     if task_name == 'test_solution' || task_name == 'submit_solution'
         if type(task_output) == v:t_dict
             if task_name == 'test_solution'
-                if task_output['state'] == 'Finished' && 
+                if task_output['state'] == 'Finished' &&
                             \task_output['answer'] != task_output['expected_answer']
                     let task_output['state'] = 'Wrong Answer'
                 endif

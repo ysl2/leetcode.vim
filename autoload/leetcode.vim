@@ -737,7 +737,7 @@ function! leetcode#ResetSolution(with_latest_submission) abort
     endfor
     call add(output, s:CommentEnd(filetype))
 
-    execute 'leftabove vsp ' . problem_desc_file_name
+    execute 'rightbelow vsp ' . problem_desc_file_name
     call append('$', output)
     silent! normal! ggdd
     silent! normal! gggqG
@@ -748,6 +748,8 @@ function! leetcode#ResetSolution(with_latest_submission) abort
     setlocal nospell
     setlocal wrap
 
+    wincmd h
+    silent! normal! G$
 endfunction
 
 function! s:CommentStart(filetype, title) abort

@@ -348,7 +348,12 @@ def _check_result(submission_id):
 
     # the keys differs between the result of testing the code and submitting it
     # for submission judge_type is 'large', and for testing judge_type does not exist
-    if r.get('judge_type') == 'large':
+    # Note:
+    #   As of October 09 2020, 'judge_type' is not provided in response,
+    #   however we can use submission_id's value to decide output formatting
+    #   'Run code' Example submission_id: "runcode_1602277499.4352891_sYj3Jte5Lb"
+    #   'Submit' Example submission_id: "406680787"
+    if not r.get('submission_id').startswith('runcode_'):
         result['answer'] = _split(r.get('code_output', ''))
         result['expected_answer'] = _split(r.get('expected_output', ''))
         result['stdout'] = _split(r.get('std_output', ''))

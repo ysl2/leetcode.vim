@@ -10,9 +10,8 @@ import os
 import vim
 
 plugin_dir = vim.eval('s:current_dir')
-thirdparty_dir = os.path.join(plugin_dir, 'thirdparty')
-
 if plugin_dir not in sys.path:
+<<<<<<< HEAD
   sys.path.append(plugin_dir)
 
 if thirdparty_dir not in sys.path:
@@ -27,6 +26,13 @@ import leetcode
 EOF
 
 let s:inited = py3eval('leetcode.inited')
+=======
+    sys.path.append(plugin_dir)
+import leetapi
+EOF
+
+"let s:inited = py3eval('leetcode.inited')
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
 
 if g:leetcode_debug
     python3 leetcode.enable_logging()
@@ -72,7 +78,7 @@ function! s:SetupProblemListBuffer() abort
     setlocal bufhidden=hide
     setlocal nowrap
     nnoremap <silent> <buffer> <return> :call <SID>HandleProblemListCR()<cr>
-    nnoremap <silent> <buffer> s :call <SID>HandleProblemListS()<cr>
+    " nnoremap <silent> <buffer> s :call <SID>HandleProblemListS()<cr>
     nnoremap <silent> <buffer> r :call <SID>HandleProblemListR()<cr>
     nnoremap <silent> <buffer> S :call <SID>HandleProblemListSort()<cr>
 
@@ -156,17 +162,17 @@ function! s:PrintProblemList() abort
     let max_frequency = s:Max(map(copy(sorted_problems), 'v:val["frequency"]'))
 
     call append('$', [printf('## Difficulty [%s]', b:leetcode_difficulty), ''])
-    let b:leetcode_difficulty_start_line = line('$')
+    let s:leetcode_difficulty_start_line = line('$')
     let difficulty_line = s:FormatIntoColumns(s:PrintDifficultyTags())
     call append('$', difficulty_line)
-    let b:leetcode_difficulty_end_line = line('$')
+    let s:leetcode_difficulty_end_line = line('$')
     call append('$', '')
 
     call append('$', [printf('## Status [%s]', s:StateToName(b:leetcode_state)), ''])
-    let b:leetcode_status_start_line = line('$')
+    let s:leetcode_status_start_line = line('$')
     let status_line = s:FormatIntoColumns(s:PrintStatusTags())
     call append('$', status_line)
-    let b:leetcode_status_end_line = line('$')
+    let s:leetcode_status_end_line = line('$')
     call append('$', '')
 
     let sort_column_name = s:sort_column_to_name_map[b:leetcode_sort_column]
@@ -213,9 +219,9 @@ function! s:PrintProblemList() abort
                     \ problem['level'],
                     \ s:ProgressBar(problem['frequency'] / max_frequency, 10)))
     endfor
-    let b:leetcode_problem_start_line = line('$')
+    let s:leetcode_problem_start_line = line('$')
     call append('$', problem_lines)
-    let b:leetcode_problem_end_line = line('$')
+    let s:leetcode_problem_end_line = line('$')
 endfunction
 
 function! s:PrintDifficultyTags()
@@ -244,13 +250,110 @@ function! s:PrintStatusTags()
                 \ printf('Attempted:%d', tags['Attempted'])]
 endfunction
 
+function! s:ListProblemsOfFavList(fav_slug, refresh) abort
+    let buf_name = 'leetcode:///problems/topic/' . a:fav_slug
+    if buflisted(buf_name)
+        execute bufnr(buf_name) . 'buffer'
+        let saved_view = winsaveview()
+        if a:refresh ==# 'redownload'
+            let expr = printf('leetapi.get_problems_of_fav("%s")',
+                        \ a:topic_slug)
+            let b:leetcode_downloaded_problems = py3eval(expr)
+        elseif a:refresh ==# 'norefresh'
+            return
+        endif
+        setlocal modifiable
+        silent! normal! ggdG
+    else
+        execute 'rightbelow new ' . buf_name
+        call s:SetupProblemListBuffer()
+        let b:leetcode_buffer_type = 'fav'
+        let b:leetcode_buffer_topic = a:fav_slug
+        let expr = printf('leetapi.get_problems_of_fav("%s")', a:fav_slug)
+        let b:leetcode_downloaded_problems = py3eval(expr)
+        let b:leetcode_difficulty = 'All'
+        let b:leetcode_state = 'All'
+        let b:leetcode_sort_column = 'id'
+        let b:leetcode_sort_order = 'asc'
+    endif
+
+    let s:leetcode_topic_start_line = 0
+    let s:leetcode_topic_end_line = 0
+    let b:leetcode_company_start_line = 0
+    let b:leetcode_company_end_line = 0
+
+    setlocal modifiable
+
+    call append('$', ['# LeetCode [Fav:' . a:fav_slug . ']', ''])
+
+    call s:PrintProblemList()
+
+    silent! normal! ggdd
+    setlocal nomodifiable
+    silent! only
+
+    if exists('saved_view')
+        call winrestview(saved_view)
+    endif
+endfunction
+
+function! s:ListProblemsOfTop151List(top_slug, refresh) abort
+    let buf_name = 'leetcode:///problems/topic/' . a:top_slug
+    if buflisted(buf_name)
+        execute bufnr(buf_name) . 'buffer'
+        let saved_view = winsaveview()
+        if a:refresh ==# 'redownload'
+            let expr = 'leetapi.get_problems_of_top151()'
+            let b:leetcode_downloaded_problems = py3eval(expr)
+        elseif a:refresh ==# 'norefresh'
+            return
+        endif
+        setlocal modifiable
+        silent! normal! ggdG
+    else
+        execute 'rightbelow new ' . buf_name
+        call s:SetupProblemListBuffer()
+        let b:leetcode_buffer_type = 'top'
+        let b:leetcode_buffer_topic = a:top_slug
+
+        let expr = 'leetapi.get_problems_of_top151()'
+        let b:leetcode_downloaded_problems = py3eval(expr)
+        let b:leetcode_difficulty = 'All'
+        let b:leetcode_state = 'All'
+        let b:leetcode_sort_column = 'id'
+        let b:leetcode_sort_order = 'asc'
+    endif
+
+    let s:leetcode_topic_start_line = 0
+    let s:leetcode_topic_end_line = 0
+    let b:leetcode_company_start_line = 0
+    let b:leetcode_company_end_line = 0
+
+
+    setlocal modifiable
+
+    call append('$', ['# LeetCode [Top151:' . a:top_slug . ']', ''])
+
+    call s:PrintProblemList()
+
+    silent! normal! ggdd
+    setlocal nomodifiable
+    silent! only
+
+    if exists('saved_view')
+        call winrestview(saved_view)
+    endif
+endfunction
+
+
+
 function! s:ListProblemsOfTopic(topic_slug, refresh) abort
     let buf_name = 'leetcode:///problems/topic/' . a:topic_slug
     if buflisted(buf_name)
         execute bufnr(buf_name) . 'buffer'
         let saved_view = winsaveview()
         if a:refresh ==# 'redownload'
-            let expr = printf('leetcode.get_problems_of_topic("%s")',
+            let expr = printf('leetapi.get_problems_of_topic("%s")',
                         \ a:topic_slug)
             let b:leetcode_downloaded_problems = py3eval(expr)['problems']
         elseif a:refresh ==# 'norefresh'
@@ -263,7 +366,7 @@ function! s:ListProblemsOfTopic(topic_slug, refresh) abort
         call s:SetupProblemListBuffer()
         let b:leetcode_buffer_type = 'topic'
         let b:leetcode_buffer_topic = a:topic_slug
-        let expr = printf('leetcode.get_problems_of_topic("%s")', a:topic_slug)
+        let expr = printf('leetapi.get_problems_of_topic("%s")', a:topic_slug)
         let b:leetcode_downloaded_problems = py3eval(expr)['problems']
         let b:leetcode_difficulty = 'All'
         let b:leetcode_state = 'All'
@@ -271,10 +374,12 @@ function! s:ListProblemsOfTopic(topic_slug, refresh) abort
         let b:leetcode_sort_order = 'asc'
     endif
 
-    let b:leetcode_topic_start_line = 0
-    let b:leetcode_topic_end_line = 0
+    let s:leetcode_topic_start_line = 0
+    let s:leetcode_topic_end_line = 0
     let b:leetcode_company_start_line = 0
     let b:leetcode_company_end_line = 0
+
+
 
     setlocal modifiable
 
@@ -311,72 +416,26 @@ function! s:ChooseTimePeriod() abort
     call s:ListProblemsOfCompany(b:leetcode_buffer_company, 'redraw')
 endfunction
 
-function! s:ListProblemsOfCompany(company_slug, refresh) abort
-    let bufname = 'leetcode:///problems/company/' . a:company_slug
-    if buflisted(bufname)
-        execute bufnr(bufname) . 'buffer'
-        let saved_view = winsaveview()
-        if a:refresh ==# 'redownload'
-            let expr = printf('leetcode.get_problems_of_company("%s")',
-                        \ a:company_slug)
-            let b:leetcode_downloaded_problems = py3eval(expr)['problems']
-        elseif a:refresh ==# 'norefresh'
-            return
-        endif
-        setlocal modifiable
-        silent! normal! ggdG
-    else
-        execute 'rightbelow new ' . bufname
-        call s:SetupProblemListBuffer()
-        let b:leetcode_buffer_type = 'company'
-        let b:leetcode_buffer_company = a:company_slug
-        let b:leetcode_time_period = 'six-months'
-        nnoremap <buffer> t :call s:ChooseTimePeriod()<cr>
-
-        let expr = printf('leetcode.get_problems_of_company("%s")',
-                    \ a:company_slug)
-        let b:leetcode_downloaded_problems = py3eval(expr)['problems']
-        let b:leetcode_difficulty = 'All'
-        let b:leetcode_state = 'All'
-        let b:leetcode_sort_column = 'id'
-        let b:leetcode_sort_order = 'asc'
-    endif
-
-    let b:leetcode_topic_start_line = 0
-    let b:leetcode_topic_end_line = 0
-    let b:leetcode_company_start_line = 0
-    let b:leetcode_company_end_line = 0
-
-    call append('$', ['# LeetCode [company:' . a:company_slug . ']',
-                \ '',
-                \ '## Frequency',
-                \ '  Time period: ' . b:leetcode_time_period,
-                \ '',
-                \ '  t     choose time period',
-                \ ''])
-
-    call s:PrintProblemList()
-
-    silent! normal! ggdd
-    setlocal nomodifiable
-    silent! only
-
-    if exists('saved_view')
-        call winrestview(saved_view)
-    endif
-endfunction
-
 function! leetcode#ListProblems(refresh) abort
+<<<<<<< HEAD
     let buf_name = 'leetcode:///problems/' . g:leetcode_problemset
     if s:CheckSignIn() == v:false
         return
     endif
     let problemset = printf('leetcode.get_problems(["%s"])', g:leetcode_problemset)
+=======
+
+    let buf_name = 'leetcode:///problems/all'
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
     if buflisted(buf_name)
         execute bufnr(buf_name) . 'buffer'
         let saved_view = winsaveview()
         if a:refresh ==# 'redownload'
+<<<<<<< HEAD
             let expr = problemset
+=======
+            let expr = 'leetapi.get_problems(["all"])'
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
             let b:leetcode_downloaded_problems = py3eval(expr)
         elseif a:refresh ==# 'norefresh'
             return
@@ -388,17 +447,19 @@ function! leetcode#ListProblems(refresh) abort
         execute 'rightbelow new ' . buf_name
         call s:SetupProblemListBuffer()
         let b:leetcode_buffer_type = 'all'
+<<<<<<< HEAD
         let expr = problemset
+=======
+        let expr = 'leetapi.get_problems(["all"])'
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
         let b:leetcode_downloaded_problems = py3eval(expr)
         let b:leetcode_difficulty = 'All'
         let b:leetcode_state = 'All'
         let b:leetcode_sort_column = 'id'
         let b:leetcode_sort_order = 'asc'
-        let s:topics_and_companies = py3eval('leetcode.get_topics_and_companies()')
+        let s:get_topics = py3eval('leetapi.get_topics()')
     endif
-
-    let topics = s:topics_and_companies['topics']
-    let companies = s:topics_and_companies['companies']
+    let topics = s:get_topics
 
     if g:leetcode_hide_topics == 0
         " concatenate the topics into a string
@@ -407,6 +468,7 @@ function! leetcode#ListProblems(refresh) abort
 
         call append('$', ['# LeetCode', '', '## Topics', ''])
 
+<<<<<<< HEAD
         let b:leetcode_topic_start_line = line('$')
         call append('$', topic_lines)
         let b:leetcode_topic_end_line = line('$')
@@ -423,7 +485,14 @@ function! leetcode#ListProblems(refresh) abort
         let b:leetcode_company_end_line = line('$')
     endif
 
+=======
+    let s:leetcode_topic_start_line = line('$')
+    call append('$', topic_lines)
+    let s:leetcode_topic_end_line = line('$')
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
     call append('$', '')
+
+
     call s:PrintProblemList()
 
     silent! normal! ggdd
@@ -478,8 +547,13 @@ function! s:HandleProblemListCR() abort
     " Parse the problem number from the line
     let line_nr = line('.')
 
+<<<<<<< HEAD
     if line_nr >= get(b:, 'leetcode_topic_start_line', 0) &&
                 \ line_nr < get(b:, 'leetcode_topic_end_line', 0)
+=======
+    if line_nr >= s:leetcode_topic_start_line &&
+                \ line_nr < s:leetcode_topic_end_line
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
         let topic_slug = expand('<cWORD>')
         let topic_slug = s:TagName(topic_slug)
         if topic_slug != ''
@@ -488,6 +562,7 @@ function! s:HandleProblemListCR() abort
         return
     endif
 
+<<<<<<< HEAD
     if line_nr >= get(b:, 'leetcode_company_start_line', 0) &&
                 \ line_nr < get(b:, 'leetcode_company_end_line', 0)
         let company_slug = expand('<cWORD>')
@@ -500,6 +575,10 @@ function! s:HandleProblemListCR() abort
 
     if line_nr >= b:leetcode_difficulty_start_line &&
                 \ line_nr < b:leetcode_difficulty_end_line
+=======
+    if line_nr >= s:leetcode_difficulty_start_line &&
+                \ line_nr < s:leetcode_difficulty_end_line
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
         let difficulty_slug = expand('<cWORD>')
         let difficulty_slug = s:TagName(difficulty_slug)
         if difficulty_slug != ''
@@ -510,8 +589,8 @@ function! s:HandleProblemListCR() abort
         endif
     endif
 
-    if line_nr >= b:leetcode_status_start_line &&
-                \ line_nr < b:leetcode_status_end_line
+    if line_nr >= s:leetcode_status_start_line &&
+                \ line_nr < s:leetcode_status_end_line
         let status_slug = expand('<cWORD>')
         let status_slug = s:TagName(status_slug)
         if status_slug != ''
@@ -523,11 +602,14 @@ function! s:HandleProblemListCR() abort
         endif
     endif
 
-    if line_nr >= b:leetcode_problem_start_line &&
-                \ line_nr < b:leetcode_problem_end_line
+    if line_nr >= s:leetcode_problem_start_line &&
+                \ line_nr < s:leetcode_problem_end_line
         let problem_id = s:ProblemIdFromNr(line_nr)
         let problem = s:GetProblem(problem_id)
         let problem_slug = problem['slug']
+
+        " let problem_slug = s:ProblemSlugFromNr(line_nr)
+
         let problem_ext = s:SolutionFileExt(g:leetcode_solution_filetype)
         let problem_file_name = printf('%s-%s.%s', problem_id,
                     \  s:SlugToFileName(problem_slug),
@@ -538,10 +620,16 @@ function! s:HandleProblemListCR() abort
             return
         endif
 
+<<<<<<< HEAD
         execute 'rightbelow vnew ' . problem_file_name
         execute 'wincmd h'
         execute 'wincmd c'
         call leetcode#ResetSolution(0)
+=======
+        "execute 'rightbelow vnew ' . problem_file_name
+        execute 'edit ' . problem_file_name
+        call leetcode#ResetSolution(1)
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
     endif
 endfunction
 
@@ -572,10 +660,12 @@ endfunction
 function! s:RedrawProblemList()
     if b:leetcode_buffer_type ==# 'all'
         call leetcode#ListProblems('redraw')
+    elseif b:leetcode_buffer_type ==# 'fav'
+        call s:ListProblemsOfFavList(b:leetcode_buffer_topic, 'redraw')
     elseif b:leetcode_buffer_type ==# 'topic'
         call s:ListProblemsOfTopic(b:leetcode_buffer_topic, 'redraw')
-    elseif b:leetcode_buffer_type ==# 'company'
-        call s:ListProblemsOfCompany(b:leetcode_buffer_company, 'redraw')
+    elseif b:leetcode_buffer_type ==# 'top'
+        call s:ListProblemsOfTop151List(b:leetcode_buffer_topic, 'redraw')
     endif
 endfunction
 
@@ -601,6 +691,17 @@ function! s:ProblemIdFromNr(nr)
     let strid = trim(items[1], ' ')
     return strid
 endfunction
+
+function! s:ProblemSlugFromNr(nr)
+    let content = getline(a:nr)
+    let items = split(content, '|')
+    if len(items) < 2
+        return -1
+    endif
+    let slug = trim(items[2], ' ')
+    return slug
+endfunction
+
 
 function! s:HandleProblemListR() abort
     if b:leetcode_buffer_type ==# 'all'
@@ -675,12 +776,14 @@ function! s:SolutionFileExt(filetype) abort
 endfunction
 
 function! leetcode#ResetSolution(with_latest_submission) abort
-    if s:CheckSignIn() == v:false
-        return
-    endif
 
+<<<<<<< HEAD
     let problem_slug = s:ProblemSlugFromFileName()
     let expr = printf('leetcode.get_problem("%s")', problem_slug)
+=======
+    let problem_slug = s:FileNameToSlug(expand('%:t:r'))
+    let expr = printf('leetapi.get_problem("%s")', problem_slug)
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
     let problem = py3eval(expr)
     if type(problem) != v:t_dict
         return
@@ -694,11 +797,11 @@ function! leetcode#ResetSolution(with_latest_submission) abort
 
     let code = []
     if a:with_latest_submission
-        let expr = printf('leetcode.get_submissions("%s")', problem_slug)
+        let expr = printf('leetapi.get_submissions("%s")', problem_slug)
         let submissions = py3eval(expr)
         if type(submissions) == v:t_list
             for submission in submissions
-                let expr = printf('leetcode.get_submission(%s)',
+                let expr = printf('leetapi.get_submission(%s)',
                             \ submission['id'])
                 let detail = py3eval(expr)
                 if type(detail) == v:t_dict && detail['filetype'] ==# filetype
@@ -739,6 +842,13 @@ function! leetcode#ResetSolution(with_latest_submission) abort
 
     execute 'rightbelow vsp ' . problem_desc_file_name
     call append('$', output)
+<<<<<<< HEAD
+=======
+
+    silent! normal! gggqG
+    call append('$', code)
+
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
     silent! normal! ggdd
     silent! normal! gggqG
     silent! normal! gg
@@ -833,17 +943,27 @@ function! s:GuessFileType() abort
 endfunction
 
 function! leetcode#TestSolution() abort
+<<<<<<< HEAD
     if s:CheckSignIn() == v:false
         return
     endif
 
     let slug = s:ProblemSlugFromFileName()
+=======
+    let file_name = s:FileNameToSlug(expand('%:t:r'))
+    if file_name == ''
+        echo 'no file name'
+        return
+    endif
+
+    let slug = split(file_name, '\.')[0]
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
     let filetype = s:GuessFileType()
 
     if exists('b:leetcode_problem')
         let problem = b:leetcode_problem
     else
-        let problem = py3eval(printf('leetcode.get_problem("%s")', slug))
+        let problem = py3eval(printf('leetapi.get_problem("%s")', slug))
         let b:leetcode_problem = problem
     endif
 
@@ -852,7 +972,9 @@ function! leetcode#TestSolution() abort
         return
     endif
 
-    let code = join(getline('1', '$'), "\n")
+    let start_line = search("local end", 'n')
+
+    let code = join(getline(start_line, '$'), "\n")
 
     call s:AskTestInputAndRunTest(problem, filetype, code)
 endfunction
@@ -887,7 +1009,8 @@ function! s:AskTestInputAndRunTest(problem, filetype, code) abort
     let s:leetcode_code = a:code
     let s:leetcode_filetype = a:filetype
 
-    autocmd BufUnload <buffer> call s:RunTest()
+    "autocmd BufLeave <buffer> call s:RunTest()
+    autocmd  BufwritePost <buffer> call s:RunTest()
 endfunction
 
 let s:comment_pattern = '\v(^#.*)|(^\s*$)'
@@ -900,7 +1023,6 @@ function! s:RunTest() abort
     " Load the buffer from the disk. If the user executed :q!, the buffer
     " will be cleared since the file is empty.
     edit!
-
     let raw_test_input = getline('1', '$')
     let test_input = filter(copy(raw_test_input), 'v:val !~# s:comment_pattern')
     let test_input = join(test_input, "\n")
@@ -919,46 +1041,41 @@ function! s:RunTest() abort
                 \ 'code': code,
                 \ 'test_input': test_input}
 
-    if has('timers')
-        let ok = py3eval('leetcode.test_solution_async(**vim.eval("args"))')
-        if ok
-            call timer_start(200, function('s:CheckRunCodeTask'),
-                        \ {'repeat': -1})
-        endif
-    else
-        let result = py3eval('leetcode.test_solution(**vim.eval("args"))')
-        if type(result) != v:t_dict
-            return
-        endif
-        call s:ShowRunResultInPreview(result)
+    let result = py3eval('leetapi.test_solution(**vim.eval("args"))')
+    if type(result) != v:t_dict
+        return
     endif
+    call s:ShowRunResultInPreview(result)
+
 endfunction
 
 function! leetcode#SubmitSolution() abort
-    if s:CheckSignIn() == v:false
+
+<<<<<<< HEAD
+    let slug = s:ProblemSlugFromFileName()
+=======
+    let file_name = s:FileNameToSlug(expand('%:t:r'))
+    if file_name == ''
+        echo 'no file name'
         return
     endif
+    let start_line = search("local end", 'n')
 
-    let slug = s:ProblemSlugFromFileName()
+    let code = join(getline(start_line, '$'), "\n")
+    let slug = split(file_name, '\.')[0]
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
     let filetype = s:GuessFileType()
 
-    if has('timers')
-        let expr = printf('leetcode.submit_solution_async("%s", "%s")',
-                    \ slug, filetype)
-        let ok = py3eval(expr)
-        if ok
-            call timer_start(200, function('s:CheckRunCodeTask'),
-                        \ {'repeat': -1})
-        endif
-    else
-        let expr = printf('leetcode.submit_solution("%s", "%s")',
-                    \ slug, filetype)
-        let result = py3eval(expr)
-        if type(result) != v:t_dict
-            return
-        endif
-        call s:ShowRunResultInPreview(result)
+    let args = { 'slug': slug,
+                \ 'filetype': filetype,
+                \ 'code': code}
+
+    let result = py3eval('leetapi.submit_solution(**vim.eval("args"))')
+    if type(result) != v:t_dict
+        return
     endif
+    call s:ShowRunResultInPreview(result)
+
 endfunction
 
 function! s:FormatSection(title, block, level) abort
@@ -1111,8 +1228,8 @@ endfunction
 
 function! s:HandleProblemListS() abort
     let line_nr = line('.')
-    if line_nr >= b:leetcode_problem_start_line &&
-                \ line_nr < b:leetcode_problem_end_line
+    if line_nr >= s:leetcode_problem_start_line &&
+                \ line_nr < s:leetcode_problem_end_line
         let problem_id = s:ProblemIdFromNr(line_nr)
         let problem = s:GetProblem(problem_id)
         let problem_slug = problem['slug']

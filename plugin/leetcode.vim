@@ -17,13 +17,14 @@ if !exists('g:leetcode_categories')
 endif
 
 if !exists('g:leetcode_solution_filetype')
-    let g:leetcode_solution_filetype = 'cpp'
+    let g:leetcode_solution_filetype = 'golang'
 endif
 
 if !exists('g:leetcode_debug')
     let g:leetcode_debug = 0
 endif
 
+<<<<<<< HEAD
 if !exists('g:leetcode_hide_paid_only')
     let g:leetcode_hide_paid_only = 0
 endif
@@ -39,9 +40,16 @@ endif
 if !exists('g:leetcode_problemset')
     let g:leetcode_problemset = 'all'
 endif
+=======
+if g:leetcode_china == 1
+    let $leet_source = 'leet-cn'
+else
+    let $leet_source = 'leet'
+endif
+
+>>>>>>> 72b6e03d59b85f96576bde3ae20533ce2b504204
 
 command! -nargs=0 LeetCodeList call leetcode#ListProblems('redraw')
 command! -nargs=0 LeetCodeReset call leetcode#ResetSolution(0)
 command! -nargs=0 LeetCodeTest call leetcode#TestSolution()
 command! -nargs=0 LeetCodeSubmit call leetcode#SubmitSolution()
-command! -nargs=0 LeetCodeSignIn call leetcode#SignIn(1)
